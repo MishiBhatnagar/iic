@@ -2,20 +2,36 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
+// helper to return user without password
+const sanitizeUser = (userDoc) => {
+  if (!userDoc) return null;
+  const { password, __v, ...rest } = userDoc.toObject ? userDoc.toObject() : userDoc;
+  return rest;
+};
+
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    let user = await User.findOne({ email });
+
+    // basic validation
+    if (!name || !email || !password) {
+      return res.status(400).json({ msg: "Name, email and password are required" });
+    }
+
+    let user = await User.findOne({ email: email.toLowerCase().trim() });
     if (user) return res.status(400).json({ msg: "User already exists" });
 
-    user = new User({ name, email, password });
+    user = new User({ name: name.trim(), email: email.toLowerCase().trim(), password });
     await user.save();
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
-    res.json({ token, user });
+    // create token (store only id and role)
+    const payload = { id: user._id, role: user.role };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    const safeUser = sanitizeUser(user);
+    res.status(201).json({ token, user: safeUser });
   } catch (err) {
+    console.error("Register error:", err);
     res.status(500).json({ msg: "Server Error" });
   }
 };
@@ -23,17 +39,25 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    let user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ msg: "Invalid Credentials" });
+
+    // basic validation
+    if (!email || !password) {
+      return res.status(400).json({ msg: "Email and password are required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) return res.status(400).json({ msg: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ msg: "Invalid Credentials" });
+    if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
-    res.json({ token, user });
+    const payload = { id: user._id, role: user.role };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    const safeUser = sanitizeUser(user);
+    res.json({ token, user: safeUser });
   } catch (err) {
+    console.error("Login error:", err);
     res.status(500).json({ msg: "Server Error" });
   }
 };

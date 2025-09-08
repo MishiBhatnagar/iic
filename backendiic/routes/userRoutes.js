@@ -4,17 +4,19 @@ const {
   saveInternship,
   unsaveInternship,
 } = require("../controllers/userController");
-const { authMiddleware } = require("../middleware/authMiddleware");
+
+// ✅ Import middleware function directly (not destructured)
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// ✅ Update skills
+// Update skills
 router.put("/skills", authMiddleware, updateSkills);
 
-// ✅ Save internship
+// Save internship
 router.post("/internships/save", authMiddleware, saveInternship);
 
-// ✅ Unsave internship
+// Unsave internship
 router.delete("/internships/:id", authMiddleware, unsaveInternship);
 
 module.exports = router;

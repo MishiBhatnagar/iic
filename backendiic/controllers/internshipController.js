@@ -1,7 +1,7 @@
 const Internship = require("../models/Internship");
 const skillMappings = require("../utils/skillMappings");
 
-// ✅ Get all internships
+// Get all internships
 exports.getAllInternships = async (req, res) => {
   try {
     const internships = await Internship.find();
@@ -12,7 +12,7 @@ exports.getAllInternships = async (req, res) => {
   }
 };
 
-// ✅ Recommend internships based on user skills
+// Recommend internships based on provided skills (body.skills should be array)
 exports.recommendInternships = async (req, res) => {
   try {
     const { skills } = req.body;
@@ -24,38 +24,48 @@ exports.recommendInternships = async (req, res) => {
     const internships = await Internship.find();
 
     const scored = internships.map((internship) => {
+      // support both old field "skills" and new "skillsRequired"
+      const required = Array.isArray(internship.skillsRequired) && internship.skillsRequired.length
+        ? internship.skillsRequired
+        : (Array.isArray(internship.skills) ? internship.skills : []);
+
       let score = 0;
-      let matched = new Set();
+      const matched = new Set();
 
       skills.forEach((s) => {
-        // Direct match
-        if (internship.skillsRequired.includes(s)) {
-          score += 1;
-          matched.add(s);
-        }
+        const skillLower = s.toString().trim().toLowerCase();
 
-        // Related skill match
-        const related = skillMappings[s] || [];
-        related.forEach((rel) => {
-          if (internship.skillsRequired.includes(rel)) {
-            score += 0.5;
-            matched.add(rel);
+        // Direct match (case-insensitive)
+        required.forEach(reqSkill => {
+          if (reqSkill.toString().trim().toLowerCase() === skillLower) {
+            score += 1;
+            matched.add(reqSkill);
           }
+        });
+
+        // Related matches from mappings (mapping keys assumed to be lower-case)
+        const related = skillMappings[skillLower] || skillMappings[s] || [];
+        related.forEach((rel) => {
+          required.forEach(reqSkill => {
+            if (reqSkill.toString().trim().toLowerCase() === rel.toString().trim().toLowerCase()) {
+              score += 0.5;
+              matched.add(reqSkill);
+            }
+          });
         });
       });
 
-      const totalSkills = internship.skillsRequired.length || 1; // avoid divide by zero
+      const totalSkills = required.length || 1; // avoid divide by zero
 
       return {
         ...internship._doc,
-        score: Math.round((score / totalSkills) * 100), // percentage match
-        matchedSkills: [...matched], // convert Set → Array
+        score: Math.round((score / totalSkills) * 100),
+        matchedSkills: Array.from(matched),
+        requiredSkills: required
       };
     });
 
-    // Sort by best match first
     scored.sort((a, b) => b.score - a.score);
-
     res.json(scored);
   } catch (err) {
     console.error("Error recommending internships:", err);

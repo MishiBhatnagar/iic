@@ -10,7 +10,7 @@ exports.updateSkills = async (req, res) => {
       return res.status(400).json({ msg: "Skills must be an array" });
     }
 
-    // Remove duplicates
+    // Remove duplicates & trim
     const uniqueSkills = [...new Set(skills.map(skill => skill.trim()))];
 
     const user = await User.findByIdAndUpdate(
@@ -54,5 +54,33 @@ exports.saveInternship = async (req, res) => {
   } catch (err) {
     console.error("Error saving internship:", err);
     res.status(500).json({ msg: "Server error while saving internship" });
+  }
+};
+
+// ✅ Unsave internship (remove from savedInternships)
+exports.unsaveInternship = async (req, res) => {
+  try {
+    const internshipId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(internshipId)) {
+      return res.status(400).json({ msg: "Invalid internship ID" });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    const idx = user.savedInternships.findIndex(id => id.toString() === internshipId);
+    if (idx > -1) {
+      user.savedInternships.splice(idx, 1);
+      await user.save();
+    }
+
+    res.json({ msg: "Internship removed", savedInternships: user.savedInternships });
+  } catch (err) {
+    console.error("Error removing saved internship:", err);
+    res.status(500).json({ msg: "Server error while removing saved internship" });
   }
 };
