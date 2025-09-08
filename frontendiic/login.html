@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI-Powered PM Internship Matchmaker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+
+        body {
+        background: linear-gradient(135deg, #e0f2fe, #dbeafe, #eff6ff);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    /* 🌟 Container */
+    .login-container {
+        background: #fff;
+        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 420px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .login-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    /* 🌟 Headings */
+    .login-container h1 {
+        font-size: 1.9rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.4rem;
+    }
+
+    .login-container p {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* 🌟 Input Fields */
+    .login-container input {
+        width: 100%;
+        padding: 12px 15px;
+        margin-top: 0.4rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .login-container input:focus {
+        border-color: #2563eb;
+        outline: none;
+        box-shadow: 0 0 6px rgba(37, 99, 235, 0.3);
+    }
+
+    /* 🌟 Button */
+    .login-container button {
+        width: 100%;
+        background: #2563eb;
+        color: white;
+        padding: 12px;
+        margin-top: 1rem;
+        border: none;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .login-container button:hover {
+        background: #1d4ed8;
+        transform: scale(1.03);
+    }
+
+    /* 🌟 Links */
+    .login-container a {
+        color: #2563eb;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .login-container a:hover {
+        color: #1d4ed8;
+    }
+
+    /* 🌟 Message */
+    #login-message {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+
+        /* body {
+            font-family: 'Inter', sans-serif;
+        }
+        .container-shadow {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .input {
+            @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
+        }
+        .link {
+            @apply text-blue-600 hover:text-blue-700 font-medium;
+        } */
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4 sm:p-6">
+
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 sm:p-8 container-shadow">
+        <header class="text-center mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Welcome Back</h1>
+            <p class="mt-2 text-gray-500">Login to continue</p>
+        </header>
+
+        <form id="login-form" class="space-y-4">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input id="email" type="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="you@example.com" />
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input id="password" type="password" required minlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" />
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-blue-700 transition-colors">Login</button>
+        </form>
+
+        <p class="text-sm text-gray-600 mt-4 text-center">
+            Don't have an account?
+            <a href="signup.html" class="text-blue-600 hover:text-blue-700 font-medium">Sign up</a>
+        </p>
+        <p class="text-xs text-gray-400 mt-2 text-center">
+            Or continue without an account: <a href="index.html" class="text-blue-600 hover:text-blue-700 font-medium">Home</a>
+        </p>
+
+        <div id="login-message" class="mt-4 text-center text-sm"></div>
+    </div>
+
+    <script>
+        // Simple localStorage-based auth (demo only)
+        function getUsers() {
+            try {
+                return JSON.parse(localStorage.getItem('users') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+        function setCurrentUser(user) {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+
+        const form = document.getElementById('login-form');
+        const message = document.getElementById('login-message');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+
+            const users = getUsers();
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (!user) {
+                message.className = 'mt-4 text-center text-sm text-red-600';
+                message.textContent = 'Invalid email or password.';
+                return;
+            }
+            setCurrentUser({ email: user.email, name: user.name || user.email.split('@')[0] });
+            message.className = 'mt-4 text-center text-sm text-green-600';
+            message.textContent = 'Login successful! Redirecting...';
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 700);
+        });
+    </script>
+</body>
+</html>
