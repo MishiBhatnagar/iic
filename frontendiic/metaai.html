@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta AI Chatbot - InternMatch</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 🌟 Global */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: #fff8f0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        
+        /* 🌟 Chat Container */
+        .chat-container {
+            width: 100%;
+            max-width: 450px;
+            height: 600px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: #ffffff;
+        }
+
+        /* 🌟 Header */
+        .chat-header {
+            background-color: #ff7a00;
+            color: white;
+            padding: 15px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* 🌟 Chat messages area */
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #fff2e6;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user { justify-content: flex-end; }
+        .message p {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            line-height: 1.4;
+        }
+
+        .message.user p {
+            background-color: #ff7a00;
+            color: white;
+            border-bottom-right-radius: 0;
+        }
+
+        .message.bot p {
+            background-color: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 0;
+        }
+
+        /* 🌟 Input section */
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background-color: #fff;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 25px;
+            border: 1px solid #ccc;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        .chat-input button {
+            margin-left: 10px;
+            padding: 12px 20px;
+            background-color: #ff7a00;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .chat-input button:hover {
+            background-color: #e06a00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">Meta AI Chatbot 🤖</div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot"><p>Hello! I am Meta AI. Ask me anything!</p></div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your question..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+
+        // Predefined bot responses (you can later integrate real AI)
+        function getBotResponse(userText) {
+            userText = userText.toLowerCase();
+            if(userText.includes('hello') || userText.includes('hi')) return 'Hi there! How can I assist you today?';
+            if(userText.includes('how are you')) return 'I am an AI, always ready to help!';
+            if(userText.includes('what is your name')) return 'I am Meta AI, your assistant!';
+            if(userText.includes('help') || userText.includes('question')) return 'Sure! Ask me anything and I will try my best to help.';
+            return "I'm not sure about that. Can you rephrase?";
+        }
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if(!text) return;
+
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.classList.add('message', 'user');
+            userMsg.innerHTML = `<p>${text}</p>`;
+            chatMessages.appendChild(userMsg);
+
+            userInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Simulate bot response
+            setTimeout(() => {
+                const botMsg = document.createElement('div');
+                botMsg.classList.add('message', 'bot');
+                botMsg.innerHTML = `<p>${getBotResponse(text)}</p>`;
+                chatMessages.appendChild(botMsg);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 700);
+        }
+
+        // Allow pressing Enter to send
+        userInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+        });
+    </script>
+
+</body>
+</html>
