@@ -1,27 +1,58 @@
+const mongoose = require("mongoose");
 const User = require("../models/User");
 
+// ✅ Update user skills
 exports.updateSkills = async (req, res) => {
   try {
+    const { skills } = req.body;
+
+    if (!Array.isArray(skills)) {
+      return res.status(400).json({ msg: "Skills must be an array" });
+    }
+
+    // Remove duplicates
+    const uniqueSkills = [...new Set(skills.map(skill => skill.trim()))];
+
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { skills: req.body.skills },
+      { skills: uniqueSkills },
       { new: true }
-    );
-    res.json(user);
+    ).select("-password"); // don’t send password back
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    res.json({ msg: "Skills updated successfully", skills: user.skills });
   } catch (err) {
-    res.status(500).json({ msg: "Server Error" });
+    console.error("Error updating skills:", err);
+    res.status(500).json({ msg: "Server error while updating skills" });
   }
 };
 
+// ✅ Save internship to user profile
 exports.saveInternship = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user.savedInternships.includes(req.body.internshipId)) {
-      user.savedInternships.push(req.body.internshipId);
+    const { internshipId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(internshipId)) {
+      return res.status(400).json({ msg: "Invalid internship ID" });
     }
-    await user.save();
-    res.json(user.savedInternships);
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    if (!user.savedInternships.includes(internshipId)) {
+      user.savedInternships.push(internshipId);
+      await user.save();
+    }
+
+    res.json({ msg: "Internship saved successfully", savedInternships: user.savedInternships });
   } catch (err) {
-    res.status(500).json({ msg: "Server Error" });
+    console.error("Error saving internship:", err);
+    res.status(500).json({ msg: "Server error while saving internship" });
   }
 };

@@ -1,9 +1,20 @@
 const express = require("express");
-const { updateSkills, saveInternship } = require("../controllers/userController");
-const auth = require("../middleware/authMiddleware");
+const {
+  updateSkills,
+  saveInternship,
+  unsaveInternship,
+} = require("../controllers/userController");
+const { authMiddleware } = require("../middleware/authMiddleware");
+
 const router = express.Router();
 
-router.put("/skills", auth, updateSkills);
-router.post("/save", auth, saveInternship);
+// ✅ Update skills
+router.put("/skills", authMiddleware, updateSkills);
+
+// ✅ Save internship
+router.post("/internships/save", authMiddleware, saveInternship);
+
+// ✅ Unsave internship
+router.delete("/internships/:id", authMiddleware, unsaveInternship);
 
 module.exports = router;
